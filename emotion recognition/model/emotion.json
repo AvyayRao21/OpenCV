@@ -1,0 +1,20 @@
+{
+  "classes": [
+    "angry",
+    "disgust",
+    "fear",
+    "happy",
+    "neutral",
+    "sad",
+    "surprise"
+  ],
+  "input_shape": [
+    48,
+    48,
+    1
+  ],
+  "input_range": "0-255 float32, grayscale; scaling is inside the model",
+  "test_accuracy": 0.6679,
+  "trained_on": "FER-2013",
+  "note": "Class order is alphabetical and locked. Read it from here."
+}

@@ -1,0 +1,31 @@
+# Dataset - downloaded separately, see the README
+FER-2013 - data set - 1/
+fer2013.csv
+*.zip
+
+# Training artefacts. The exported emotion.tflite and emotion.json ARE
+# committed; everything else a run produces is throwaway.
+emotion recognition/cache/
+emotion recognition/model/quick/
+emotion recognition/model/saved_model/
+*.keras
+*.h5
+*.npy
+*.npz
+*.log
+history.csv
+state.json
+live_settings.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS and editors
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
