@@ -30,7 +30,7 @@ pip install tensorflow          # only to train or run the expression model
 Every program runs the same way — no arguments, no setup:
 
 ```bash
-python "hand recognition/finger counting - mediapipe.py"
+python "hand recognition/counting - mediapipe.py"
 ```
 
 Press **q** to quit any of them (a few use **Esc** — noted in the table).
@@ -40,8 +40,8 @@ Press **q** to quit any of them (a few use **Esc** — noted in the table).
 | Program | What it does | Keys |
 | --- | --- | --- |
 | `hsv tuner.py` | Slider tool for finding the HSV range that isolates your skin from your background. I built it to make the program below work, and it prints the final values when you quit. | q |
-| `finger counting - hsv mask.py` | Counts fingers held inside a box, using an HSV skin mask and convexity defects. No machine learning — pure geometry. Sensitive to lighting, which is exactly why the tuner exists. | q |
-| `finger counting - mediapipe.py` | The same task using MediaPipe hand landmarks. Compares each fingertip against the joint below it. Far more robust than the mask version, and much shorter. | Esc |
+| `counting - hsv mask.py` | Counts fingers held inside a box, using an HSV skin mask and convexity defects. No machine learning — pure geometry. Sensitive to lighting, which is exactly why the tuner exists. | q |
+| `counting - mediapipe.py` | The same task using MediaPipe hand landmarks. Compares each fingertip against the joint below it. Far more robust than the mask version, and much shorter. | Esc |
 | `volume control.py` | Pinch your thumb and index finger to set the system volume. Distance between the two tips maps to a volume level, with a bar showing where you are. **Changes your real volume.** | q |
 | `air drawing.py` | Draws on screen following your index fingertip. The pen is always down. | c clear, q |
 | `air drawing - pinch to draw.py` | The same, but pinching lowers the pen and releasing lifts it, so you can move without drawing. | c clear, q |
