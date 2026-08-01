@@ -1,171 +1,174 @@
-# OpenCV experiments
+# Computer Vision Projects
 
-A growing collection of small computer vision programs I write to learn with.
-Each one is self-contained, runs on a normal laptop webcam, and does something
-you can see immediately. Everything runs locally — no cloud, no accounts, no
-uploads.
+A growing collection of small programs I build with OpenCV to learn computer
+vision properly — by making things that work rather than by reading about them.
 
-Three groups so far: **hand tracking**, **colour detection**, and **facial
-expression recognition** with a model I trained myself.
-
-> Before pointing any of this at a person — especially the expression
-> recogniser — please read [DISCLAIMER.md](DISCLAIMER.md). It explains what the
-> model can and cannot tell you, and it is shorter than it looks.
-
-## Requirements
-
-- **Python 3.11.** Not 3.13 — MediaPipe and TensorFlow do not publish wheels
-  for it yet.
-- A webcam.
-- Windows for the volume control program (it uses `pycaw`). Everything else is
-  cross-platform.
-
-```bash
-pip install opencv-python mediapipe numpy
-pip install pycaw comtypes      # only for volume control
-pip install pyserial            # only for the Arduino colour program
-pip install tensorflow          # only to train or run the expression model
-```
-
-Every program runs the same way — no arguments, no setup:
+Every program is self-contained, runs on an ordinary laptop webcam, and does
+something you can see the moment you start it. Everything runs locally: no
+cloud services, no accounts, no uploads, no data leaving your machine.
 
 ```bash
 python "hand recognition/counting - mediapipe.py"
 ```
 
-Press **q** to quit any of them (a few use **Esc** — noted in the table).
+That is the whole setup. Every program in here starts the same way.
+
+## Contents
+
+| | |
+| --- | --- |
+| [Quick start](#quick-start) | What you need and how to run anything here |
+| [Hand tracking](#hand-tracking) | Finger counting, air drawing, virtual keyboards, gesture volume control |
+| [Colour detection](#colour-detection) | Naming colours in view, and driving an Arduino LED with them |
+| [Faces and expressions](#faces-and-expressions) | A CNN trained from scratch to sort facial expressions |
+| [What is coming next](#what-is-coming-next) | Where this collection is heading |
+| [How this repository is organised](#how-this-repository-is-organised) | The pattern every project follows |
+| [Honest limits](#honest-limits) | What these programs are and are not |
+
+## Quick start
+
+You need **Python 3.11**. Not 3.13 — MediaPipe and TensorFlow do not publish
+wheels for it yet, and nothing here will install.
+
+```bash
+pip install opencv-python mediapipe numpy
+```
+
+Three programs need something extra, and only those three:
+
+| Extra | Needed for |
+| --- | --- |
+| `pip install pycaw comtypes` | Gesture volume control (Windows only) |
+| `pip install pyserial` | The Arduino colour program |
+| `pip install tensorflow` | Running or training the expression model |
+
+Then run any program directly. None of them take arguments or need
+configuration:
+
+```bash
+python "<folder>/<program>.py"
+```
+
+Press **q** to quit, or **Esc** in a few of them. Each project's README lists
+the exact keys.
 
 ## Hand tracking
 
-| Program | What it does | Keys |
-| --- | --- | --- |
-| `hsv tuner.py` | Slider tool for finding the HSV range that isolates your skin from your background. I built it to make the program below work, and it prints the final values when you quit. | q |
-| `counting - hsv mask.py` | Counts fingers held inside a box, using an HSV skin mask and convexity defects. No machine learning — pure geometry. Sensitive to lighting, which is exactly why the tuner exists. | q |
-| `counting - mediapipe.py` | The same task using MediaPipe hand landmarks. Compares each fingertip against the joint below it. Far more robust than the mask version, and much shorter. | Esc |
-| `volume control.py` | Pinch your thumb and index finger to set the system volume. Distance between the two tips maps to a volume level, with a bar showing where you are. **Changes your real volume.** | q |
-| `air drawing.py` | Draws on screen following your index fingertip. The pen is always down. | c clear, q |
-| `air drawing - pinch to draw.py` | The same, but pinching lowers the pen and releasing lifts it, so you can move without drawing. | c clear, q |
-| `drag and drop.py` | Pinch to pick up an on-screen circle, move it, release to drop. Tracks the grab offset so the object does not jump when you grab it. | q |
-| `virtual keyboard - one hand.py` | A full on-screen keyboard. Hover a key with your index finger and pinch to type. Open palm is space, extended pinky is backspace. | Esc |
-| `virtual keyboard - two hands.py` | The same keyboard tracking both hands at once, so you can type with either. | Esc |
-
-The two finger-counting programs are worth reading side by side. They solve an
-identical problem, one with hand-tuned colour thresholds and one with a
-landmark model, and the difference in robustness is the whole lesson.
-
-## Colour detection
-
-| Program | What it does | Keys |
-| --- | --- | --- |
-| `dominant color.py` | Names the most common colour in view from a set of HSV ranges. | q |
-| `dominant color with arduino.py` | The same detection, but sends the colour over serial to an Arduino driving an RGB LED, so a real light matches what the camera sees. | q |
-
-The Arduino sketch is in `color recognition/arduino/rgb led.ino`. It reads
-`"r,g,b\n"` from serial and writes to pins 9, 10 and 11. Set your port at the
-top of the Python file — it defaults to `COM3` — and note the program will not
-start without a board connected.
-
-## Facial expression recognition
-
-The largest piece here. A convolutional network trained from scratch on
-[FER-2013](https://www.kaggle.com/datasets/msambare/fer2013) to sort faces into
-seven expressions, paired with MediaPipe face detection for a live webcam demo.
-
-No pretrained weights are used anywhere. The model is trained entirely on my
-own laptop, on CPU, in about 42 minutes.
+Hand and finger tracking, mostly built on MediaPipe's landmark model. These
+were the first things I made here, and they still make the best starting point
+if you are reading the code to learn from it.
 
 | Program | What it does |
 | --- | --- |
-| `live.py` | The live demo. Detects faces, classifies each one, and smooths the result over time so labels do not flicker. |
-| `train.py` | Trains the model from the FER-2013 image folders and exports it. |
-| `verify_tflite.py` | Re-scores the exported model against the whole test set, so quantisation cannot quietly cost accuracy. |
+| `hsv tuner.py` | Slider tool for isolating your skin from the background |
+| `counting - hsv mask.py` | Counts fingers using colour thresholds and geometry |
+| `counting - mediapipe.py` | The same task using landmarks instead |
+| `volume control.py` | Pinch to set the system volume |
+| `air drawing.py` | Draw on screen with your fingertip |
+| `air drawing - pinch to draw.py` | The same, but pinch to lower the pen |
+| `drag and drop.py` | Pinch to pick up and move an on-screen object |
+| `virtual keyboard - one hand.py` | Type on an on-screen keyboard by pinching |
+| `virtual keyboard - two hands.py` | The same keyboard, both hands at once |
 
-### Running the demo
+The two counting programs solve an identical problem two different ways — one
+with hand-tuned colour thresholds, one with a landmark model. Reading them side
+by side is the clearest lesson in this repository about why the second approach
+won.
 
-```bash
-python "emotion recognition/live.py"
+**→ [Full details, controls and notes](hand%20recognition/README.md)**
+
+## Colour detection
+
+Naming the dominant colour in view, and pushing that out to real hardware.
+
+| Program | What it does |
+| --- | --- |
+| `dominant color.py` | Names the most common colour in frame |
+| `dominant color with arduino.py` | Sends that colour to an Arduino driving an RGB LED |
+
+The second one needs a board wired up; the sketch is included.
+
+**→ [Full details, wiring and the Arduino sketch](color%20recognition/README.md)**
+
+## Faces and expressions
+
+A convolutional network I trained from scratch on the FER-2013 dataset, which
+sorts a face into one of seven expressions, paired with MediaPipe face
+detection for a live webcam demo.
+
+No pretrained weights are used anywhere in this — the model is trained entirely
+on my own laptop, on CPU, in about 42 minutes. It reaches **66.7%** on the
+held-out test set, and the trained model is included so the demo runs
+immediately.
+
+| Program | What it does |
+| --- | --- |
+| `live.py` | The live webcam demo |
+| `train.py` | Trains the model from the dataset |
+| `verify_tflite.py` | Re-scores the exported model to catch accuracy loss |
+
+The most interesting thing I found building it was that **how tightly you crop
+the face matters far more than lighting does** — enough that one expression
+drops from 71% to 8% accuracy under a bad crop. That is why the demo lets you
+adjust the crop while it runs.
+
+**→ [Full details, accuracy figures and how to train it](emotion%20recognition/README.md)**
+
+> This one deserves a caveat the others do not. It recognises *expressions*, not
+> feelings, and it is wrong about one time in three. Please read
+> [DISCLAIMER.md](DISCLAIMER.md) before pointing it at anybody.
+
+## What is coming next
+
+This is a long-running collection, and the plan is to keep adding to it. What I
+am working towards:
+
+- **Augmented reality** — anchoring graphics to real objects and surfaces so
+  they hold position as the camera moves.
+- **3D from a 2D camera** — depth and perspective from an ordinary webcam, and
+  scenes that respond to where you actually are relative to the screen.
+- More small experiments alongside those, in the same self-contained style.
+
+Each will arrive as its own folder following the same pattern as the ones
+already here, so the repository grows sideways rather than getting tangled.
+
+## How this repository is organised
+
+One folder per subject area. Each folder holds its programs plus a README
+covering what each does, its controls, and anything you need to know before
+running it.
+
+```
+.
+├── hand recognition/       tracking hands and fingers
+├── color recognition/      colour detection, plus Arduino output
+├── emotion recognition/    expression classification and its model
+└── <new areas land here as their own folders>
 ```
 
-The trained model is included (`model/emotion.tflite`, 357 KB), so this works
-straight away.
+Programs are deliberately standalone. There is no shared framework to learn
+before you can read one, and no program depends on another. Open any single
+file and it makes sense on its own — that is the point, since these exist to be
+read as much as run.
 
-| Key | Does |
-| --- | --- |
-| `q` / `Esc` | Quit |
-| `s` | Toggle temporal smoothing |
-| `b` | Toggle the confidence bars |
-| `p` | Toggle the preview of what the model actually sees |
-| `[` `]` | Tighten / widen the face crop |
-| `r` | Reset the crop to the calibrated default |
-| `w` | Save your crop setting for next time |
+## Honest limits
 
-### Training it yourself
+These are learning projects, not products. They are not robust against unusual
+input, not optimised, and not tested across every platform — I build on
+Windows, so that path gets the most use.
 
-Download FER-2013 and extract it so the folders sit next to the project as
-`FER-2013 - data set - 1/train/<emotion>/` and `.../test/<emotion>/`.
+Two of them reach outside their own window: the volume control changes your
+actual system volume, and the Arduino program writes to a serial port. Both are
+flagged in their own READMEs.
 
-```bash
-python "emotion recognition/train.py" --quick    # ~15s, proves the pipeline works
-python "emotion recognition/train.py"            # the real run, ~42 min on CPU
-```
-
-| Flag | Does |
-| --- | --- |
-| `--quick` | Trains on 300 images per class for 3 epochs. Meaningless accuracy; it exists so you find out the pipeline is broken in seconds rather than an hour. |
-| `--epochs N` | Number of epochs. Default 60, or 3 with `--quick`. |
-| `--batch-size N` | Default 128. |
-| `--resume` | Continue an interrupted run from the last saved epoch. |
-
-Training writes a checkpoint every epoch, so a crash or a power cut costs you
-one epoch rather than the whole run.
-
-### How well it works
-
-**66.7% overall on the FER-2013 test set**, which the model never sees during
-training. Human agreement with FER-2013's own labels is around 65%, so this is
-a decent result — but it also means one prediction in three is wrong.
-
-| Expression | Recall | | Expression | Recall |
-| --- | ---: | --- | --- | ---: |
-| happy | 86.6% | | angry | 59.9% |
-| surprise | 84.2% | | sad | 53.7% |
-| disgust | 70.3% | | fear | **37.0%** |
-| neutral | 69.6% | | | |
-
-`fear` is the weak point. It shares raised eyebrows with `surprise` and a
-downturned mouth with `sad`, and at 48×48 pixels there is not much left to tell
-them apart. I would rather publish that number than hide it behind the average.
-
-### The interesting part: framing matters more than lighting
-
-The thing I did not expect. I assumed uneven lighting would be the problem, so
-I measured it — and the model turned out to be almost immune to brightness and
-contrast changes. Every normalisation I tried made it *worse*.
-
-What actually matters is how tightly the face is cropped:
-
-| Crop scale | Overall | `disgust` |
-| --- | ---: | ---: |
-| 0.90 (tighter) | 63.2% | 74.8% |
-| **1.00 (as trained)** | **66.7%** | 71.2% |
-| 1.25 (wider) | 59.6% | 35.1% |
-| 1.50 (wider) | 47.2% | **8.1%** |
-
-`disgust` collapses from 71% to 8% purely from bad framing. So rather than
-guess the right crop, I calibrated it: running MediaPipe's face detector on the
-FER-2013 images themselves shows its box covers 88.8% of a FER-2013 crop, which
-means expanding it by 1.126× reproduces the framing the model was trained on.
-That is where the default comes from.
-
-There is no single best value, though — overall accuracy peaks at one setting
-while `sad` and `disgust` both prefer a tighter crop. That is why you can
-adjust it live with `[` and `]`, with a preview of the exact image being fed to
-the model and real FER-2013 faces beside it to match against.
+Full detail, including what the expression recogniser can and cannot tell you,
+is in **[DISCLAIMER.md](DISCLAIMER.md)**. It is worth the two minutes.
 
 ## Licence
 
-[PolyForm Noncommercial 1.0.0](LICENSE.md) — free for personal, educational and
-other noncommercial use. Not for selling or commercial use.
+[PolyForm Noncommercial 1.0.0](LICENSE.md) — free to use, study, modify and
+share for personal, educational and other noncommercial purposes. Not for
+commercial use or resale.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to suggest something, and
-[CHANGELOG.md](CHANGELOG.md) for what has changed.
+[CHANGELOG.md](CHANGELOG.md) tracks what has changed.
+[CONTRIBUTING.md](CONTRIBUTING.md) covers issues and suggestions.
