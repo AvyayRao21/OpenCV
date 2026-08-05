@@ -21,6 +21,7 @@ That is the whole setup. Every program in here starts the same way.
 | [Hand tracking](#hand-tracking) | Finger counting, air drawing, virtual keyboards, gesture volume control |
 | [Colour detection](#colour-detection) | Naming colours in view, and driving an Arduino LED with them |
 | [Faces and expressions](#faces-and-expressions) | A CNN trained from scratch to sort facial expressions |
+| [Head-tracking parallax window](#head-tracking-parallax-window) | The screen becomes a window into a box behind the glass |
 | [What is coming next](#what-is-coming-next) | Where this collection is heading |
 | [How this repository is organised](#how-this-repository-is-organised) | The pattern every project follows |
 | [Honest limits](#honest-limits) | What these programs are and are not |
@@ -118,6 +119,50 @@ adjust the crop while it runs.
 > feelings, and it is wrong about one time in three. Please read
 > [DISCLAIMER.md](DISCLAIMER.md) before pointing it at anybody.
 
+## Head-tracking parallax window
+
+The biggest thing here. The webcam works out where my eye is in physical space,
+and the screen stops being a flat picture and becomes a window into a box that
+extends behind the glass. Move your head and you see round the sides of things,
+as you would leaning across a real window frame.
+
+The trick is not what most people expect. It is **not** a camera orbiting the
+scene — that looks similar in a still frame and is obviously wrong in motion.
+The virtual camera never turns at all; its direction stays perpendicular to the
+screen and only its *position* follows my eye. What changes is the shape of the
+view volume: the projection is sheared into an asymmetric frustum whose four
+side planes always pass exactly through the four physical corners of my monitor.
+
+The upshot is that the screen corners are nailed to the world. A test runs 200
+random eye positions and checks that a point at a screen corner lands on the
+same pixel every time — it does, to within a millionth of a pixel.
+
+| Program | What it does |
+| --- | --- |
+| `environment check.py` | Verifies the stack before anything else |
+| `calibration.py` | Measures the screen, the camera position and the lens |
+| `eye position in millimeters.py` | Webcam pixels to a head position in millimetres |
+| `scenes.py` | **The finished thing** — four scenes, and where to start |
+
+Everything is measured in real millimetres, because it has to be: the screen is
+measured with a ruler, the camera lens position with it, and the lens focal
+length is solved by sitting a known distance away. Get those wrong and the scene
+still moves, just by the wrong amount.
+
+Eight programs in total, each left working and frozen with the next starting as
+a copy, so you can run any two side by side and see what changed. The pair worth
+comparing is `grid room.py`, which uses an ordinary camera and can only slide
+the picture around, against `mouse parallax.py`, which shears the frustum
+properly and makes the room open up.
+
+**→ [Setup order, calibration and full details](head%20tracking/README.md)**
+
+> An honest warning that the README covers properly: this effect is far more
+> convincing through a camera than to your own eyes. Two eyes looking at a flat
+> panel get stereo depth cues insisting the surface is flat, and at desk
+> distance those usually win. Every impressive video of this effect online —
+> including the famous ones — is filmed, and a camera has only one eye.
+
 ## What is coming next
 
 This is a long-running collection, and the plan is to keep adding to it. What I
@@ -125,8 +170,9 @@ am working towards:
 
 - **Augmented reality** — anchoring graphics to real objects and surfaces so
   they hold position as the camera moves.
-- **3D from a 2D camera** — depth and perspective from an ordinary webcam, and
-  scenes that respond to where you actually are relative to the screen.
+- **Stereo output for the parallax window** — one frustum per eye instead of
+  one for both. The maths already supports it, and it is the one change that
+  could beat the flat-screen depth cue described above.
 - More small experiments alongside those, in the same self-contained style.
 
 Each will arrive as its own folder following the same pattern as the ones

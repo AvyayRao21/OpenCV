@@ -1,0 +1,82 @@
+# Head-tracking parallax window — configuration.
+#
+# Every length is in MILLIMETRES. Every coordinate is in SCREEN SPACE:
+#
+#     origin  = the geometric centre of the display panel
+#     +X      = right, from where you sit looking at the screen
+#     +Y      = up
+#     +Z      = out of the screen, towards your face
+#
+# So your eye is always at positive Z (typically 400-700 mm), the glass is
+# exactly Z = 0, and anything that should look like it is inside the box lives
+# at negative Z.
+#
+# Values marked MEASURE ME are placeholders derived from the panel spec, not
+# from a ruler. They are close, but the illusion is only as accurate as they
+# are — see the README for how to measure them properly.
+
+display:
+  # MEASURE THESE. A ruler across the middle of the screen is fine; a millimetre
+  # or two of error will not show. Do not trust what the display reports about
+  # its own size - EDID stores it in whole centimetres, which is far too coarse.
+  # These defaults are a 16-inch 16:10 panel and are almost certainly not yours.
+  screen_w_mm: 345.0         # panel width, glass only, not the bezel
+  screen_h_mm: 216.0         # panel height, glass only
+
+  # Native panel resolution in real pixels, not the DPI-scaled desktop size.
+  # This gives the pixels-per-millimetre scale that windowed mode needs to work
+  # out where the window's corners are in physical space.
+  native_px: [1920, 1080]   # detected for you by calibration.py
+
+  # Where the webcam sits relative to the centre of the panel. The camera is
+  # above the top bezel, so Y is positive: half the panel height, plus the gap
+  # from the top edge of the glass up to the lens.
+  cam_offset_mm: [0.0, 118.0, 0.0]   # MEASURE THIS - glass top to lens centre
+
+tracking:
+  ipd_mm: 63.0               # your interpupillary distance; 63 is the adult average
+  focal_px: null             # filled in by calibration.py - never guess it
+  flip_x: false              # flip if leaning right moves the scene the wrong way
+  flip_y: false
+  yaw_correction: true       # correct the measured pupil gap when the head is turned
+  max_yaw_deg: 35.0          # beyond this the correction is unreliable, so clamp it
+  predict_ms: 20             # forward extrapolation to hide pipeline latency; 0 = off
+  z_clamp_mm: [200.0, 1500.0]
+  lost_face_ease_s: 0.6      # time to drift back to centre after losing the face
+
+filter:
+  # One Euro filter. Low cutoff when still (kills jitter), high cutoff when
+  # moving fast (kills lag). Expect to tune these two by feel.
+  min_cutoff: 0.75
+  beta: 0.005
+  d_cutoff: 1.0
+
+camera:
+  index: 0
+  # dshow | msmf | auto.
+  #
+  # msmf, and this was measured rather than guessed. At 1280x720 this webcam
+  # only offers DirectShow an uncompressed YUY2 stream, which is bandwidth
+  # limited to 10 fps — 100 ms between head updates, easily enough to wreck the
+  # illusion. It ignores a request for MJPG. Media Foundation negotiates a
+  # compressed stream and delivers 30.3 fps at the same resolution, and opens
+  # faster too (1.9 s against 3.2 s).
+  #
+  # dshow is kept as an option because it behaves better with some external USB
+  # webcams. If you switch to it, check the tracker frame rate in the debug HUD.
+  backend: msmf
+  width: 1280
+  height: 720
+
+render:
+  near_mm: 10.0
+  far_mm: 10000.0
+  msaa: 8                    # this GPU supports up to 16, and has the headroom
+  vsync: true
+  # Cap on the render loop. The scene runs at ~900 fps uncapped, but the
+  # compositor only presents a fraction of those, so the rest are computed and
+  # thrown away. Capping at the panel's refresh rate costs nothing visible and
+  # stops the machine heating up for no reason. 0 disables the cap.
+  max_fps: 240
+  fullscreen: true
+  vignette: 0.35             # faux bezel shadow at the border; 0 disables it
