@@ -3,6 +3,12 @@
 A growing collection of small programs I build with OpenCV to learn computer
 vision properly — by making things that work rather than by reading about them.
 
+It is also a deliberate exercise in AI-assisted engineering. The larger
+projects here were specified, structured and tested on real hardware by me,
+with an AI coding assistant doing much of the implementation, the way a lot of
+software is now built. The split of responsibilities is laid out openly in
+[How this was built](#how-this-was-built).
+
 Every program is self-contained, runs on an ordinary laptop webcam, and does
 something you can see the moment you start it. Everything runs locally: no
 cloud services, no accounts, no uploads, no data leaving your machine.
@@ -22,6 +28,7 @@ That is the whole setup. Every program in here starts the same way.
 | [Colour detection](#colour-detection) | Naming colours in view, and driving an Arduino LED with them |
 | [Faces and expressions](#faces-and-expressions) | A CNN trained from scratch to sort facial expressions |
 | [Head-tracking parallax window](#head-tracking-parallax-window) | The screen becomes a window into a box behind the glass |
+| [How this was built](#how-this-was-built) | AI-assisted development, and who did what |
 | [What is coming next](#what-is-coming-next) | Where this collection is heading |
 | [How this repository is organised](#how-this-repository-is-organised) | The pattern every project follows |
 | [Honest limits](#honest-limits) | What these programs are and are not |
@@ -56,8 +63,9 @@ the exact keys.
 ## Hand tracking
 
 Hand and finger tracking, mostly built on MediaPipe's landmark model. These
-were the first things I made here, and they still make the best starting point
-if you are reading the code to learn from it.
+were the first experiments here, from mid-2025, and they are published
+unchanged apart from the filenames. They still make the best starting point if
+you are reading the code to learn from it.
 
 | Program | What it does |
 | --- | --- |
@@ -80,7 +88,8 @@ won.
 
 ## Colour detection
 
-Naming the dominant colour in view, and pushing that out to real hardware.
+Naming the dominant colour in view, and pushing that out to real hardware. Also
+from 2025, published unchanged.
 
 | Program | What it does |
 | --- | --- |
@@ -93,14 +102,15 @@ The second one needs a board wired up; the sketch is included.
 
 ## Faces and expressions
 
-A convolutional network I trained from scratch on the FER-2013 dataset, which
+A convolutional network trained from scratch on the FER-2013 dataset, which
 sorts a face into one of seven expressions, paired with MediaPipe face
-detection for a live webcam demo.
+detection for a live webcam demo. A 2025 attempt at this never ran; this
+version was rebuilt in 2026 with an AI coding assistant.
 
-No pretrained weights are used anywhere in this — the model is trained entirely
-on my own laptop, on CPU, in about 42 minutes. It reaches **66.7%** on the
-held-out test set, and the trained model is included so the demo runs
-immediately.
+No pretrained weights are used anywhere in this. That was a deliberate
+requirement: the model is trained entirely on a laptop, on CPU, in about 42
+minutes, so that it is genuinely this project's own. It reaches **66.7%** on the held-out test set,
+and the trained model is included so the demo runs immediately.
 
 | Program | What it does |
 | --- | --- |
@@ -108,10 +118,11 @@ immediately.
 | `train.py` | Trains the model from the dataset |
 | `verify_tflite.py` | Re-scores the exported model to catch accuracy loss |
 
-The most interesting thing I found building it was that **how tightly you crop
-the face matters far more than lighting does** — enough that one expression
-drops from 71% to 8% accuracy under a bad crop. That is why the demo lets you
-adjust the crop while it runs.
+The most interesting finding started with a hands-on camera test: the demo ran at
+80 fps, but `sad`, `disgust` and `fear` almost never appeared. Chasing that
+showed that **how tightly you crop the face matters far more than lighting
+does** — enough that one expression drops from 71% to 8% accuracy under a bad
+crop. That is why the demo lets you adjust the crop while it runs.
 
 **→ [Full details, accuracy figures and how to train it](emotion%20recognition/README.md)**
 
@@ -163,6 +174,70 @@ properly and makes the room open up.
 > distance those usually win. Every impressive video of this effect online —
 > including the famous ones — is filmed, and a camera has only one eye.
 
+## How this was built
+
+This project was developed using AI-assisted coding tools. My role involved
+architecting the system requirements, designing the overall logic flow, and
+utilizing advanced prompting techniques to generate and refine the Python
+codebase.
+
+The workflow matured over two phases:
+
+| Phase | Areas | How it was built |
+| --- | --- | --- |
+| 2025 | Hand tracking, colour detection | Early experiments while learning OpenCV, with help from AI chat tools. Published unchanged apart from the filenames. |
+| 2026 | Expression recognition, head-tracking parallax window | Full AI-assisted development with Claude Code: requirements, architecture, staging and hardware testing on my side; implementation generated and refined through the assistant |
+
+### My role
+
+- **Requirements and constraints, set before any code.** Everything runs
+  locally, every program starts with no setup beyond `pip install`, and
+  dependencies stay minimal. For the expression model: no pretrained weights
+  and no training on personal face data, so the model comes only from public
+  data on local hardware. No image of my face is ever saved or committed.
+- **Spec-driven development.** The head-tracking build ran from a detailed
+  written specification covering the coordinate system, the off-axis
+  projection, the latency budget and the failure modes to avoid. It was split
+  into eight stages, each left as a working program, so every step could be
+  verified before the next one started.
+- **Hardware testing and feedback.** Every camera-facing stage was run on my
+  own machine, and the results went back into the next iteration. Several
+  fixes started there:
+  - The expression demo ran at 80 fps, but three expressions almost never
+    fired. Tracking that down led to the face-crop finding above.
+  - Screen measured with a ruler, calibration run, axis signs checked on
+    camera, and the smoothing filter tuned by hand to values far from the
+    textbook defaults.
+  - The parallax was geometrically right but did not *feel* 3D. The first
+    explanation offered (windowed mode) was wrong, since it had been running
+    fullscreen all along. A test filming the screen with a phone held beside my
+    head showed the real limit is binocular vision, not the code, which is why
+    the README says so plainly.
+  - A requirement that calibration work on anyone's screen, not just mine,
+    exposed a real gap in screen-size detection.
+- **Review before release.** Nothing went public without my sign-off, and work
+  that did not match the brief was sent back.
+
+### The AI's role
+
+- Implemented most of the code in the expression and head-tracking folders,
+  including the automated self-tests.
+- Ran the benchmarks and measurements quoted in these READMEs (accuracy
+  tables, frame timings, the filter comparison) and proposed design options
+  with their reasoning, which were accepted, rejected or redirected.
+- Scaffolded the repository: READMEs, changelog, contributing guide, disclaimer
+  and licence.
+
+### What working this way taught me
+
+Precise specifications get better results than clever prompts. A passing test
+is not the same as a working program, so anything with a camera or a screen
+gets tested on real hardware. And an AI's explanation is a hypothesis, not a
+fact: more than once a confident diagnosis was wrong, and hands-on testing is
+what caught it. Going deeper into the maths underneath, the off-axis
+projection and the One Euro filter in particular, is the next thing this
+repository is for.
+
 ## What is coming next
 
 This is a long-running collection, and the plan is to keep adding to it. What I
@@ -189,6 +264,7 @@ running it.
 ├── hand recognition/       tracking hands and fingers
 ├── color recognition/      colour detection, plus Arduino output
 ├── emotion recognition/    expression classification and its model
+├── head tracking/          the head-tracked parallax window
 └── <new areas land here as their own folders>
 ```
 

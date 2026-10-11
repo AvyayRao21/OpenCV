@@ -3,6 +3,10 @@
 These are personal learning projects. They are not production software, not a
 product, and not a service. Read this before pointing any of them at a person.
 
+The code was developed with AI-assisted coding tools and checked by automated
+self-tests and by running it on real hardware. It has not been independently
+audited.
+
 ## The expression recogniser does not read feelings
 
 This is the part that matters most, so it goes first.

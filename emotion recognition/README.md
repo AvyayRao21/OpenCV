@@ -3,9 +3,14 @@
 A convolutional neural network trained from scratch to sort a face into one of
 seven expressions, with a live webcam demo built on MediaPipe face detection.
 
-No pretrained weights are used anywhere. The network is trained entirely on my
-own laptop, on CPU, in about 42 minutes. Importing someone else's weights would
-have scored higher, but training it myself was the point.
+No pretrained weights are used anywhere. The network is trained entirely on a
+laptop CPU, in about 42 minutes. Importing someone else's weights would have
+scored higher, but training it locally from public data was the requirement.
+
+Built in 2026 through AI-assisted development: the code and the measurements
+below were produced with an AI coding assistant, against requirements I set,
+and tested on my own webcam. See
+[How this was built](../README.md#how-this-was-built).
 
 > **Read [DISCLAIMER.md](../DISCLAIMER.md) before using this on anybody.** It
 > recognises expressions, not feelings, and it is wrong about one time in
@@ -67,17 +72,18 @@ result — and it still means one prediction in three is wrong.
 
 `fear` is the clear weak point. It shares raised eyebrows with `surprise` and a
 downturned mouth with `sad`, and at 48×48 pixels there is very little detail
-left to separate them. It usually gets called one of those two, or `angry`. I
-would rather publish that number than hide it inside the average.
+left to separate them. It usually gets called one of those two, or `angry`.
+That number is published here rather than hidden inside the average.
 
-## The thing I did not expect
+## The thing nobody expected
 
-I assumed uneven lighting would be the main problem in real use, so I tested
-it: I distorted the test set to imitate bad webcam conditions — brighter,
-darker, flatter, harsher — and measured how much accuracy fell.
+On the first real camera test, `sad`, `disgust` and `fear` almost never
+appeared. Uneven lighting was the obvious suspect, so that was tested first:
+the test set was distorted to imitate bad webcam conditions — brighter, darker,
+flatter, harsher — and the accuracy drop measured.
 
 Barely at all. The model held between 64% and 67% throughout. Every contrast
-normalisation I then tried made things **worse**, not better: adaptive
+normalisation tried after that made things **worse**, not better: adaptive
 histogram equalisation cost about a point, plain histogram equalisation over
 five.
 
@@ -93,7 +99,7 @@ What actually matters is how tightly the face is cropped:
 `disgust` falls from 71% to 8% on framing alone. Position barely matters — an
 off-centre face is fine. It is the *scale* that has to be right.
 
-So rather than guess the right crop, I measured it. Running MediaPipe's face
+So rather than guess the right crop, it was measured. Running MediaPipe's face
 detector on the FER-2013 images themselves shows its box covers 88.8% of one of
 those crops, which means expanding it by 1.126× reproduces the framing the model
 was trained on. That is where the default comes from.

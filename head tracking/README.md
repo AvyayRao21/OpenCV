@@ -10,6 +10,12 @@ Johnny Chung Lee Wii-remote demo.
 
 Everything runs locally. No cloud, no network, no accounts.
 
+Built in 2026 through spec-driven, AI-assisted development: a written
+specification, eight stages each verified before the next began, the
+implementation generated with an AI coding assistant, and every camera-facing
+stage tested and tuned on my own screen and webcam. See
+[How this was built](../README.md#how-this-was-built).
+
 ---
 
 ## The one idea that makes it work
